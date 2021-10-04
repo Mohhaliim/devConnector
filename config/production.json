@@ -2,5 +2,8 @@
   "mongoURI": "mongodb+srv://halim:fQd564UyaqZ71aON@devconnector.fbwnk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
   "jwtSecret": "mysecrettoken",
   "githubClientId": "bfd3b7908b66a6c39392",
-  "githubSecret": "cc1cac80134b91187aacc12afc58711b101977a1"
+  "githubSecret": "cc1cac80134b91187aacc12afc58711b101977a1",
+  "mailUser": "devconnectorr@outlook.com",
+  "mailPass": "123456123456Dc",
+  "mailService": "hotmail"
 }

@@ -6,18 +6,27 @@ const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const fs = require('fs');
+const imageUpload = require('../../middleware/upload');
 
 //@route  POST api/users
 //@desc   Register user route
 //@access public
+
 router.post(
   '/',
   [
-    check('name', 'Name is required').not().isEmpty(),
-    check('email', 'Please include a valid email').isEmail(),
-    check('password', 'Please enter a password with 6 or more chars').isLength({
-      min: 6,
-    }),
+    imageUpload.upload.single('profilePicture'),
+    [
+      check('name', 'Name is required').not().isEmpty(),
+      check('email', 'Please include a valid email').isEmail(),
+      check(
+        'password',
+        'Please enter a password with 6 or more chars'
+      ).isLength({
+        min: 6,
+      }),
+    ],
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -26,6 +35,14 @@ router.post(
     }
 
     const { name, email, password } = req.body;
+    //upload pp
+    let img = {};
+    if (req.file) {
+      img = {
+        data: fs.readFileSync(req.file.path),
+        contentType: req.file.mimetype,
+      };
+    }
 
     try {
       //check if user exists
@@ -49,6 +66,7 @@ router.post(
         email,
         avatar,
         password,
+        img,
       });
 
       //encrybt the password
@@ -69,6 +87,7 @@ router.post(
         { expiresIn: 360000 },
         (err, token) => {
           if (err) throw err;
+
           res.json({ token });
         }
       );

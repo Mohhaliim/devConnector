@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import Email from './Email';
 
 const ProfileTop = ({
   profile: {
@@ -8,12 +9,24 @@ const ProfileTop = ({
     location,
     website,
     social,
-    user: { name, avatar },
+    user: { name, avatar, img, email },
   },
 }) => {
+  const [contact, setContact] = useState({ state: false, reciever: email });
+  //const [reciever, setReciever] = useState(email);
+  let source;
+  if (img) {
+    const data = Buffer.from(img.data.data).toString('base64');
+    source = `data:${img.contentType};base64,${data}`;
+  }
   return (
     <div className='profile-top bg-primary p-2'>
-      <img className='round-img my-1' src={avatar} alt='' />
+      {img ? (
+        <img src={source} alt='' className='round-img my-1' />
+      ) : (
+        <img src={avatar} alt='' className='round-img my-1' />
+      )}
+
       <h1 className='large'>{name}</h1>
       <p className='lead'>
         {status} {company && <span> at {company} </span>}
@@ -50,7 +63,19 @@ const ProfileTop = ({
             <i className='fab fa-instagram fa-2x'></i>
           </a>
         )}
+        {
+          <a
+            onClick={() => {
+              setContact({ state: true });
+            }}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            <i className='fas fa-envelope fa-2x'></i>
+          </a>
+        }
       </div>
+      <Email contact={contact} setContact={setContact}></Email>
     </div>
   );
 };

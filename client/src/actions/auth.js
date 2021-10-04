@@ -32,17 +32,34 @@ export const loadUser = () => async (dispatch) => {
 
 //register user
 export const register =
-  ({ name, email, password }) =>
+  ({ name, email, password, img }) =>
   async (dispatch) => {
     const config = {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
     };
 
-    const body = JSON.stringify({ name, email, password });
+    // const body = JSON.stringify({ name, email, password, img });
+    //trials
+    let pp;
+    if (img) {
+      const ext = img.type.replace(/image\//g, '.');
+      pp = new File([img], name + '-profilepicture' + ext, {
+        lastModified: new Date().getTime(),
+        type: img.type,
+      });
+    }
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('hey', 'here');
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('profilePicture', pp);
+
     try {
-      const res = await axios.post('/api/users', body, config);
+      const res = await axios.post('/api/users', formData, config);
       dispatch({
         type: REGISTER_SUCCESS,
         payload: res.data,

@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import { setAlert } from '../../actions/alert';
 import PropTypes from 'prop-types';
 import { register } from '../../actions/auth';
+import ReactAvatarEditor from 'react-avatar-editor';
+
 export const Register = ({ setAlert, register, isAuthenticated }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -12,17 +14,58 @@ export const Register = ({ setAlert, register, isAuthenticated }) => {
     password2: '',
   });
 
+  //profile picture beginning
+  const [profilePicture, setImageData] = useState({
+    imgSource: '',
+    allowZoomOut: false,
+    position: { x: 0.5, y: 0.5 },
+    scale: 1,
+    rotate: 0,
+    borderRadius: 50,
+    preview: null,
+    width: 200,
+    height: 200,
+  });
+  const handleNewImage = (e) => {
+    setImageData({
+      ...profilePicture,
+      [e.target.name]: e.target.files[0],
+    });
+  };
+  const handleScale = (e) => {
+    const scale = parseFloat(e.target.value);
+    setImageData({ ...profilePicture, [e.target.name]: scale });
+  };
+  const handlePositionChange = (position) => {
+    setImageData({ ...profilePicture, position: this.position });
+  };
+  const setEditorRef = (editor) => (this.editor = editor);
+  //profile picture ending
+
   const { name, email, password, password2 } = formData;
 
-  const onChange = (e) =>
+  const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    if (password !== password2) {
-      setAlert('password do not match', 'danger');
+    if (profilePicture.imgSource) {
+      if (this.editor) {
+        const canvas = this.editor.getImageScaledToCanvas();
+        const img = await new Promise((resolve) => canvas.toBlob(resolve));
+        if (password !== password2) {
+          setAlert('password do not match', 'danger');
+        } else {
+          register({ name, email, password, img });
+        }
+      }
     } else {
-      register({ name, email, password });
+      if (password !== password2) {
+        setAlert('password do not match', 'danger');
+      } else {
+        register({ name, email, password });
+      }
     }
   };
 
@@ -76,6 +119,41 @@ export const Register = ({ setAlert, register, isAuthenticated }) => {
             name='password2'
             value={password2}
             onChange={(e) => onChange(e)}
+          />
+        </div>
+        <div className='form-group'>
+          <div>
+            <ReactAvatarEditor
+              ref={setEditorRef}
+              image={profilePicture.imgSource}
+              scale={parseFloat(profilePicture.scale)}
+              width={profilePicture.width}
+              height={profilePicture.height}
+              position={profilePicture.position}
+              onPositionChange={handlePositionChange}
+              rotate={parseFloat(profilePicture.rotate)}
+              borderRadius={
+                profilePicture.width / (100 / profilePicture.borderRadius)
+              }
+              className='editor-canvas'
+            />
+          </div>
+          Profile Picture:
+          <input
+            name='imgSource'
+            type='file'
+            onChange={(e) => handleNewImage(e)}
+          />
+          <br />
+          Zoom:
+          <input
+            name='scale'
+            type='range'
+            onChange={handleScale}
+            min={profilePicture.allowZoomOut ? '0.1' : '1'}
+            max='2'
+            step='0.01'
+            defaultValue='1'
           />
         </div>
         <input type='submit' className='btn btn-primary' value='Register' />

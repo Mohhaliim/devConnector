@@ -5,6 +5,7 @@ import {
   UPDATE_PROFILE,
   GET_PROFILES,
   GET_REPOS,
+  MESSAGE_ERROR,
 } from '../actions/types';
 const initiaLState = {
   profile: null,
@@ -30,6 +31,7 @@ export default function (state = initiaLState, action) {
         profiles: payload,
         loading: false,
       };
+    case MESSAGE_ERROR:
     case PROFILE_ERROR:
       return {
         ...state,

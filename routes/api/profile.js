@@ -4,6 +4,7 @@ const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
 const request = require('request');
 const config = require('config');
+const nodemailer = require('nodemailer');
 const Profile = require('../../models/Profile');
 const User = require('../../models/User');
 const Post = require('../../models/Post');
@@ -110,7 +111,12 @@ router.post(
 //@access      public
 router.get('/', async (req, res) => {
   try {
-    const profiles = await Profile.find().populate('user', ['name', 'avatar']);
+    const profiles = await Profile.find().populate('user', [
+      'name',
+      'avatar',
+      'img',
+    ]);
+
     res.json(profiles);
   } catch (err) {
     console.error(err.message);
@@ -125,7 +131,7 @@ router.get('/user/:user_id', async (req, res) => {
   try {
     const profile = await Profile.findOne({
       user: req.params.user_id,
-    }).populate('user', ['name', 'avatar']);
+    }).populate('user', ['name', 'avatar', 'img', 'email']);
     if (!profile) {
       return res.status(400).json({ msg: 'There is no profile for this user' });
     }
@@ -311,4 +317,61 @@ router.get('/github/:username', (req, res) => {
   }
 });
 
+//@route       POST api/email
+//@desc        send email
+//@access      private
+router.post(
+  '/contact',
+  auth,
+  [
+    check('subject', 'subject is required').not().isEmpty(),
+    check('message', 'Message is required').not().isEmpty(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { reciever, subject, message } = req.body;
+    const transporter = nodemailer.createTransport({
+      service: config.get('mailService'),
+      auth: {
+        user: config.get('mailUser'),
+        pass: config.get('mailPass'),
+      },
+    });
+
+    const options = {
+      from: config.get('mailUser'),
+      to: reciever,
+      subject: subject,
+      text: message,
+    };
+
+    try {
+      const user = await User.findOne({ _id: req.user.id }).select('-password');
+      const senderMail = user.email;
+      const senderName = user.name;
+      const mesBody = `Hey! How is it going?\nYou have got a message from ${user.name}, his Email is ${user.email}.\n\t${message}`;
+
+      const options = {
+        from: config.get('mailUser'),
+        to: reciever,
+        subject: subject,
+        text: mesBody,
+      };
+
+      transporter.sendMail(options, function (err, info) {
+        if (err) {
+          return res.status(400).json({ error: err });
+        }
+        console.log('sent' + info.response);
+        return res.status(200).json({ msg: 'Message sent' });
+      });
+    } catch (err) {
+      res.status(500).send('Server Error');
+    }
+  }
+);
 module.exports = router;

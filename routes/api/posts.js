@@ -25,6 +25,7 @@ router.post(
         name: user.name,
         avatar: user.avatar,
         user: req.user.id,
+        img: user.img ? user.img : {},
       });
 
       const post = await newPost.save();
@@ -144,7 +145,7 @@ router.put('/unlike/:id', auth, async (req, res) => {
 });
 
 //@router Post api/posts/comment/:id
-//@desc   comment a post
+//@desc   comment on a post
 //@access private
 router.post(
   '/comment/:id',
@@ -162,6 +163,7 @@ router.post(
         text: req.body.text,
         name: user.name,
         avatar: user.avatar,
+        img: user.img ? user.img : {},
         user: req.user.id,
       };
 

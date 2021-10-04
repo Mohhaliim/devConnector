@@ -3,16 +3,26 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 const ProfileItem = ({
   profile: {
-    user: { _id, name, avatar },
+    user: { _id, name, avatar, img },
     status,
     company,
     location,
     skills,
   },
 }) => {
+  let source;
+  if (img) {
+    const data = Buffer.from(img.data.data).toString('base64');
+    source = `data:${img.contentType};base64,${data}`;
+  }
+
   return (
     <div className='profile bg-light'>
-      <img src={avatar} alt='' className='round-img' />
+      {img ? (
+        <img src={source} alt='' className='round-img' />
+      ) : (
+        <img src={avatar} alt='' className='round-img' />
+      )}
       <div>
         <h2>{name}</h2>
         <p>

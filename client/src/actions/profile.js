@@ -8,6 +8,7 @@ import {
   CLEAR_PROFILE,
   GET_PROFILES,
   GET_REPOS,
+  MESSAGE_ERROR,
 } from './types';
 
 //get current users profile
@@ -205,5 +206,24 @@ export const deleteAccount = () => async (dispatch) => {
         payload: { msg: err.response.statusText, status: err.response.status },
       });
     }
+  }
+};
+
+//send email
+export const sendEmail = (formData) => async (dispatch) => {
+  try {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    await axios.post('/api/profile/contact', formData, config);
+
+    dispatch(setAlert('Message sent', 'success'));
+  } catch (err) {
+    dispatch({
+      type: MESSAGE_ERROR,
+      payload: { msg: err.response.statusText, status: err.response.status },
+    });
   }
 };
